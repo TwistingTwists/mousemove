@@ -32,7 +32,7 @@ fn main() {
         let new_y = (current_position.y + speed + random_offset_y) as i32 % screen_height;
 
         // Move the mouse to the new position
-        autopilot::mouse::move_to(Point::new(new_x as f64, new_y as f64));
+        let _ = autopilot::mouse::move_to(Point::new(new_x as f64, new_y as f64));
 
         // Sleep for a short duration to control the speed of the loop
         thread::sleep(Duration::from_millis(500));

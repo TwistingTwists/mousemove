@@ -5,11 +5,12 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [target.x86_64-pc-windows-gnu]
-linker = "x86_64-w64-mingw32-gcc"
-dockerfile = "./path/to/where/the/Dockerfile/resides"
+# linker = "x86_64-w64-mingw32-gcc"
+dockerfile = "./Dockerfile"
+
+# [target.aarch64-unknown-linux-gnu]
 
 
 [dependencies]
-
 autopilot = "0.4.0"
 rand = "0.8.4"
