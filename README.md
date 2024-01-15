@@ -6,3 +6,7 @@ how to cross compile for windows?
 `brew install mingw-w64 `
 3. Add some config in Cargo.toml
 4. `cargo build --target x86_64-pc-windows-gnu --release` 
+
+
+
+## NOTE: remember to cleanup and invalidate .env file before making this repo public
