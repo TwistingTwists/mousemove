@@ -1,12 +1,15 @@
+// mod screen_size;
+
 use autopilot::geometry::Point;
 use rand::Rng;
 use std::thread;
 use std::time::Duration;
 
+// use screen_size::get_screen_size;
+
 fn main() {
-    // Set the screen resolution (change these values according to your screen)
-    let screen_width = 1920;
-    let screen_height = 1080;
+    // let (screen_width, screen_height) = get_screen_size();
+    let (screen_width, screen_height) = (1920, 1080);
 
     // Set the speed of the mouse movement
     let speed = 50.0;
