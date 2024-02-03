@@ -1,3 +1,6 @@
+// #![allow(dead_code)]
+// #![allow(unused_variables)]
+
 use rdev::{listen, Event, EventType::MouseMove};
 
 use std::time::Instant;
@@ -15,10 +18,10 @@ async fn main() {
     tokio::spawn(async move {
         let mut last_move = Instant::now();
         let tx2 = tx.clone();
-
         // Spawning a blocking task
         let mut listened_key_mouse_event =
-            tokio::task::spawn_blocking(move || blocking_function(tx2)).await;
+            tokio::task::spawn_blocking(|| blocking_function(tx2)).await;
+        println!("spawn_blocking is running: \t ",);
 
         // Simulate mouse move events every 2 seconds
         loop {
@@ -26,7 +29,7 @@ async fn main() {
             time::sleep(Duration::from_secs(1)).await;
 
             let elapsed = last_move.elapsed().as_secs();
-            println!("entered loop \n - {}", elapsed);
+            println!("elapsed time - {}\n", elapsed);
 
             // match on event.name in closure
             // this will block the loop. which is what we want.
@@ -82,12 +85,21 @@ async fn main() {
     println!("Timer expired!");
 }
 
-async fn blocking_function(tx: Sender<()>) {
-    // if let Err(error) = listen(callback) {
-    //     println!("Error: {:?}", error);
-    //     return;
-    // }
-    let val = listen(callback);
+fn blocking_function(tx: Sender<()>) {
+    println!("\t in Blocking_fn");
+    let val = listen(|event: Event| {
+        match event.event_type {
+            MouseMove { x, y } =>
+            // how to send tx.send from here and reset the timer and exit this closure.
+            {
+                // let tx_send_future = tx.send(());
+                println!("MouseMove: {} {}", x, y);
+            }
+            other => {
+                println!("Got {:?} ", other);
+            }
+        }
+    });
     println!("listen callback {:?}", val);
 
     // // if above doesn't give error, then reset the timer by sending event.
@@ -96,20 +108,20 @@ async fn blocking_function(tx: Sender<()>) {
     // }
 }
 
-fn callback(event: Event) {
-    // println!("Event: {:?}", event);
+// fn callback(event: Event) {
+//     // println!("Event: {:?}", event);
 
-    match event.event_type {
-        MouseMove { x, y } =>
-        // how to send tx.send from here and reset the timer and exit this closure.
-        {
-            println!("MouseMove: {} {}", x, y);
-        }
-        other => {
-            println!("Got {:?} ", other);
-        }
-    }
-}
+//     match event.event_type {
+//         MouseMove { x, y } =>
+//         // how to send tx.send from here and reset the timer and exit this closure.
+//         {
+//             println!("MouseMove: {} {}", x, y);
+//         }
+//         other => {
+//             println!("Got {:?} ", other);
+//         }
+//     }
+// }
 // async fn async_mouse_move(mut tx: tokio::sync::mpsc::Sender<()>) {
 //     let mut last_move = std::time::Instant::now();
 
