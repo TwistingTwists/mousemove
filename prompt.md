@@ -1,0 +1,79 @@
+// mod screen_size;
+
+use autopilot::geometry::Point;
+use rand::Rng;
+use std::thread;
+use std::time::Duration;
+
+// use screen_size::get_screen_size;
+
+fn main() {
+    // let (screen_width, screen_height) = get_screen_size();
+    let (screen_width, screen_height) = (1920, 1080);
+
+    // Set the speed of the mouse movement
+    let speed = 50.0;
+
+    loop {
+        // Set the range for random values
+        let random_range = 300;
+
+        let mut rng = rand::thread_rng();
+
+        // Get the current mouse position
+        let current_position = autopilot::mouse::location();
+
+        // Calculate the new position with added randomness
+        let random_offset_x = rng.gen_range(-random_range..=random_range) as f64;
+        let random_offset_y = rng.gen_range(-random_range..=random_range) as f64;
+
+        // Calculate the new position (you can modify this according to your needs)
+        let new_x = (current_position.x + speed + random_offset_x) as i32 % screen_width;
+        let new_y = (current_position.y + speed + random_offset_y) as i32 % screen_height;
+
+        // Move the mouse to the new position
+        let _ = autopilot::mouse::move_to(Point::new(new_x as f64, new_y as f64));
+
+        // Sleep for a short duration to control the speed of the loop
+        thread::sleep(Duration::from_millis(500));
+    }
+}
+-----
+the above is a rust code for moving the mouse on the screen.
+
+Can you modify the script above to do the following :
+
+1. listen to any mouse move events by the user. If the user moves the mouse, reset the timer.
+
+2.  if the timer completes, start moving the mouse cursor to random location until any mouse move event by user is received. or space button is pressed
+
+3. how to distinguish mouse events from the program itself or from the user?
+---
+
+
+ use tokio crate . Show me the code
+
+ ---
+
+
+
+
+
+
+ use rdev::{listen, Event};
+
+ // This will block.
+ if let Err(error) = listen(callback) {
+     println!("Error: {:?}", error)
+ }
+
+ fn callback(event: Event) {
+     println!("My callback {:?}", event);
+     match event.name {
+         Some(string) => println!("User wrote {:?}", string),
+         None => (),
+     }
+ }
+
+ ---
+ rewrite the async_mouse_move function using rdev library. Use the above as reference to remove the dependency on mki crate.

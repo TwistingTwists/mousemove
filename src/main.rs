@@ -1,37 +1,94 @@
-use autopilot::geometry::Point;
-use rand::Rng;
-use std::thread;
-use std::time::Duration;
+#[allow(unused_mut)]
+mod random_move;
+use random_move::random_mouse_move;
+use rdev::{listen, Event, EventType, Key::Space};
+use tokio::sync::mpsc;
+use tokio::task::spawn_blocking;
+use tokio::time::Duration;
 
-fn main() {
-    // Set the screen resolution (change these values according to your screen)
-    let screen_width = 1920;
-    let screen_height = 1080;
+// runtime = exectuor + reactor
+// futures = executor + _______  = 1/2 runtime
+// https://github.com/richardanaya/executor
+// exectuor = only executor
 
-    // Set the speed of the mouse movement
-    let speed = 50.0;
+#[derive(Debug)]
+enum Command {
+    MoveMouse,
+    ResetTimer,
+}
 
+#[tokio::main]
+async fn main() {
+    // say_hello(); // future => executor + ______ ?
+    // say_hello().await;
+    // await needs executor and reactor (the runtime).
+    // you cannot run asynchronous code in sync code. => you need a runtime for it.
+    // BUT if you need to run an async code in  a sync code in an async function ?
+    //  => need nested runtimes. Nopes. not allowed.
+    // async <- sync <- async
+
+    let (tx, mut rx) = mpsc::channel::<Command>(10);
+    let tx_outer = tx.clone();
+    tokio::spawn(async move {
+        // will take a thread from `hot threads` in thread pool that tokio manages
+        let tx2 = tx.clone();
+        let mut listened_key_mouse_event = spawn_blocking(move || {
+            println!("Spawned keyboard / mouse listener");
+            blocking_function(tx2)
+        });
+        dbg!(&listened_key_mouse_event);
+    });
+
+    // Timer task
+    let mut remaining_time = 5;
+    // let mut remaining_time = 5 * 60;
+    let mut timer = tokio::time::interval(Duration::from_secs(1));
+    println!("before tokio select! -> {} ", remaining_time);
+
+    // tokio::spawn(my_timer(remaining_time));
     loop {
-        // Set the range for random values
-        let random_range = 300;
+        tokio::select! {
+        _ = timer.tick() => {
+            remaining_time -= 1;
+            println!("Remaining time: {} seconds", remaining_time);
+            if remaining_time <= 0 {
+                tx_outer.send(Command::MoveMouse).await.unwrap();
+                // break;
+            }
+        }
+        Some(command) = rx.recv() => {
+            // if let Ok(command_enum) = command {
+            match command {
+                Command::MoveMouse => {
+                    println!("What if mouse actually moved?");
+                    random_mouse_move()
+                }
 
-        let mut rng = rand::thread_rng();
+                Command::ResetTimer => {
 
-        // Get the current mouse position
-        let current_position = autopilot::mouse::location();
-
-        // Calculate the new position with added randomness
-        let random_offset_x = rng.gen_range(-random_range..=random_range) as f64;
-        let random_offset_y = rng.gen_range(-random_range..=random_range) as f64;
-
-        // Calculate the new position (you can modify this according to your needs)
-        let new_x = (current_position.x + speed + random_offset_x) as i32 % screen_width;
-        let new_y = (current_position.y + speed + random_offset_y) as i32 % screen_height;
-
-        // Move the mouse to the new position
-        let _ = autopilot::mouse::move_to(Point::new(new_x as f64, new_y as f64));
-
-        // Sleep for a short duration to control the speed of the loop
-        thread::sleep(Duration::from_millis(500));
+                    remaining_time = 5; // Reset the timer
+                    // remaining_time = 5 * 60; // Reset the timer
+                }
+            }
+        }
+        }
     }
+}
+
+fn blocking_function(tx: mpsc::Sender<Command>) {
+    let val = listen(move |event: Event| match event.event_type {
+        EventType::MouseMove { x, y } => {
+            println!("MouseMove: {} {}", x, y);
+            // tokio::time::sleep(Duration::from_millis(900));
+            // tx.blocking_send(Command::MoveMouse).unwrap();
+        }
+        EventType::KeyPress(Space) => {
+            tx.blocking_send(Command::ResetTimer).unwrap();
+        }
+        other => {
+            println!("Got {:?} ", other);
+        }
+    });
+
+    dbg!(&val);
 }
