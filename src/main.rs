@@ -1,4 +1,5 @@
 use std::time::Duration;
+use tokio::task::spawn_blocking;
 
 // runtime = exectuor + reactor
 // futures = executor + _______  = 1/2 runtime
@@ -7,8 +8,11 @@ use std::time::Duration;
 
 async fn hello_delay(task: u64, time: u64) {
     println!("Started: {task}");
-    tokio::time::sleep(Duration::from_millis(time)).await;
-    // std::thread::sleep(Duration::from_millis(time));
+    let _ = spawn_blocking(move || {
+        // tokio::time::sleep(Duration::from_millis(time)).await;
+        std::thread::sleep(Duration::from_millis(time));
+    })
+    .await;
     println!("Finished: {task}");
 }
 
