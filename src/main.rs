@@ -1,7 +1,7 @@
 #[allow(unused_mut)]
 mod random_move;
 use random_move::random_mouse_move;
-use rdev::{listen, Event, EventType, Key::Space};
+use rdev::{listen, Event, EventType};
 use tokio::sync::mpsc;
 use tokio::task::spawn_blocking;
 use tokio::time::Duration;
@@ -40,8 +40,8 @@ async fn main() {
     });
 
     // Timer task
-    let mut remaining_time = 5;
-    // let mut remaining_time = 5 * 60;
+    // let mut remaining_time = 5;
+    let mut remaining_time = 5 * 60;
     let mut timer = tokio::time::interval(Duration::from_secs(1));
     println!("before tokio select! -> {} ", remaining_time);
 
@@ -50,24 +50,27 @@ async fn main() {
         tokio::select! {
         _ = timer.tick() => {
             remaining_time -= 1;
-            println!("Remaining time: {} seconds", remaining_time);
             if remaining_time <= 0 {
                 tx_outer.send(Command::MoveMouse).await.unwrap();
                 // break;
             }
+            if remaining_time == 10 {
+                println!(" {} ", remaining_time);
+            }
+
         }
         Some(command) = rx.recv() => {
             // if let Ok(command_enum) = command {
             match command {
                 Command::MoveMouse => {
-                    println!("What if mouse actually moved?");
+                    // println!("What if mouse actually moved?");
                     random_mouse_move()
                 }
 
                 Command::ResetTimer => {
 
-                    remaining_time = 5; // Reset the timer
-                    // remaining_time = 5 * 60; // Reset the timer
+                    // remaining_time = 5; // Reset the timer
+                    remaining_time = 5 * 60; // Reset the timer
                 }
             }
         }
@@ -78,7 +81,7 @@ async fn main() {
 fn blocking_function(tx: mpsc::Sender<Command>) {
     let val = listen(move |event: Event| match event.event_type {
         EventType::MouseMove { x, y } => {
-            println!("MouseMove: {} {}", x, y);
+            // println!("MouseMove: {} {}", x, y);
             // tokio::time::sleep(Duration::from_millis(900));
             // tx.blocking_send(Command::MoveMouse).unwrap();
         }
@@ -86,7 +89,7 @@ fn blocking_function(tx: mpsc::Sender<Command>) {
             tx.blocking_send(Command::ResetTimer).unwrap();
         }
         other => {
-            println!("Got {:?} ", other);
+            // println!("Got {:?} ", other);
         }
     });
 
