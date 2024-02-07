@@ -82,7 +82,7 @@ fn blocking_function(tx: mpsc::Sender<Command>) {
             // tokio::time::sleep(Duration::from_millis(900));
             // tx.blocking_send(Command::MoveMouse).unwrap();
         }
-        EventType::KeyPress(Space) => {
+        EventType::KeyPress(_) => {
             tx.blocking_send(Command::ResetTimer).unwrap();
         }
         other => {
