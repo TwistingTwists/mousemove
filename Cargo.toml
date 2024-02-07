@@ -12,28 +12,30 @@ license = false
 eula = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[target.x86_64-pc-windows-gnu]
-linker = "x86_64-w64-mingw32-gcc"
+# [target.x86_64-pc-windows-gnu]
+# linker = "x86_64-w64-mingw32-gcc"
 # dockerfile = "./Dockerfile"
+
+# [target.x86_64-pc-windows-msvc]
+# linker = "x86_64-w64-mingw32-gcc"
 
 [dependencies]
 autopilot = "0.4.0"
 rand = "0.8.4"
-cfg-if = "1.0.0"
+# cfg-if = "1.0.0"
 rdev = "0.5.3"
 # mki = "0.2.3"
 tokio = { version = "1.35.1", features = ["full"] }
 
 
-#[cfg(target_os = "windows")]
-winapi = { version = "0.3.9", features = ["winuser"] }
+# #[cfg(target_os = "windows")]
+# winapi = { version = "0.3.9", features = ["winuser"] }
 
-#[cfg(target_os = "macos")]
-core-graphics = "0.23.1"
+# #[cfg(target_os = "macos")]
+# core-graphics = "0.23.1"
 
-
-#[cfg(target_os = "linux")]
-x11 = "2.20.0"
+# #[cfg(target_os = "linux")]
+# x11 = "2.20.0"
 
 
 # The profile that 'cargo dist' will build with
@@ -53,7 +55,7 @@ strip = "symbols"
 # Config for 'cargo dist'
 [workspace.metadata.dist]
 # The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.8.0"
+cargo-dist-version = "0.9.0"
 # CI backends to support
 ci = ["github"]
 # The installers to generate for each app
